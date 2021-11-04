@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.tpl": "html",
+        "tusb.h": "c",
+        "hid_device.h": "c",
+        "board.h": "c",
+        "usb_descriptors.h": "c",
+        "tusb_common.h": "c"
+    }
+}
