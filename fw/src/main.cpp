@@ -50,30 +50,14 @@ int main()
     stdio_init_all();
     mp_gpio_init();
     board_init();
-
     tusb_init();
 
     while (1)
     {
-        tud_task(); // tinyusb device task
-        //led_blinking_task();
+        tud_task();
+        led_blinking_task();
         hid_task();
     }
-
-    // // Wait forever
-    // while (1)
-    // {
-
-    //     int newPos = encoder->getPosition();
-    //     if (pos != newPos)
-    //     {
-    //         printf("pos:");
-    //         printf("%d", newPos);
-    //         printf(" dir:");
-    //         printf("%d\n", (int)(encoder->getDirection()));
-    //         pos = newPos;
-    //     }
-    // }
 
     return 0;
 }
@@ -318,12 +302,13 @@ uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t
 // received data on OUT endpoint ( Report ID = 0, Type = 0 )
 void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize)
 {
-    // TODO set LED based on CAPLOCK, NUMLOCK etc...
+    // This example doesn't use multiple report and report ID
     (void)itf;
     (void)report_id;
     (void)report_type;
-    (void)buffer;
-    (void)bufsize;
+
+    // echo back anything we received from host
+    tud_hid_report(0, buffer, bufsize);
 }
 
 //--------------------------------------------------------------------+
