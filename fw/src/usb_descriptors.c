@@ -75,6 +75,11 @@ uint8_t const desc_hid_report1[] =
   TUD_HID_REPORT_DESC_KEYBOARD()
 };
 
+uint8_t const desc_hid_report2[] =
+{
+  TUD_HID_REPORT_DESC_MOUSE()
+};
+
 // Invoked when received GET HID REPORT DESCRIPTOR
 // Application return pointer to descriptor
 // Descriptor contents must exist long enough for transfer to complete
@@ -83,6 +88,10 @@ uint8_t const * tud_hid_descriptor_report_cb(uint8_t itf)
   if (itf == 0)
   {
     return desc_hid_report1;
+  }
+  else if (itf == 1)
+  {
+    return desc_hid_report2;
   }
 
   return NULL;
@@ -95,12 +104,14 @@ uint8_t const * tud_hid_descriptor_report_cb(uint8_t itf)
 enum
 {
   ITF_NUM_HID1,
+  ITF_NUM_HID2,
   ITF_NUM_TOTAL
 };
 
-#define  CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN)
+#define  CONFIG_TOTAL_LEN  (TUD_CONFIG_DESC_LEN + TUD_HID_DESC_LEN + TUD_HID_DESC_LEN)
 
 #define EPNUM_HID1   0x81
+#define EPNUM_HID2   0x82
 
 uint8_t const desc_configuration[] =
 {
@@ -109,6 +120,7 @@ uint8_t const desc_configuration[] =
 
   // Interface number, string index, protocol, report descriptor len, EP In address, size & polling interval
   TUD_HID_DESCRIPTOR(ITF_NUM_HID1, 4, HID_ITF_PROTOCOL_NONE, sizeof(desc_hid_report1), EPNUM_HID1, CFG_TUD_HID_EP_BUFSIZE, 10),
+  TUD_HID_DESCRIPTOR(ITF_NUM_HID2, 5, HID_ITF_PROTOCOL_NONE, sizeof(desc_hid_report2), EPNUM_HID2, CFG_TUD_HID_EP_BUFSIZE, 10)
 };
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
@@ -132,6 +144,7 @@ char const* string_desc_arr [] =
   "TinyUSB Device",               // 2: Product
   "123456",                       // 3: Serials, should use chip ID
   "Keyboard Interface",           // 4: Interface 1 String
+  "Mouse Interface",              // 5: Interface 2 String
 };
 
 static uint16_t _desc_str[32];

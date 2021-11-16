@@ -115,10 +115,8 @@ void RotaryEncoder::setPosition(long newPosition)
 
 } // setPosition()
 
-void RotaryEncoder::tick(void)
+void RotaryEncoder::tick(int sig1, int sig2)
 {
-    int sig1 = gpio_get(_pin1);
-    int sig2 = gpio_get(_pin2);
     int8_t thisState = sig1 | (sig2 << 1);
 
     if (_oldState != thisState)

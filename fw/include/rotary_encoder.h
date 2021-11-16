@@ -50,7 +50,7 @@ public:
     void setPosition(long newPosition);
 
     // call this function every some milliseconds or by using an interrupt for handling state changes of the rotary encoder.
-    void tick(void);
+    void tick(int pin1, int pin2);
 
     // Returns the time in milliseconds between the current observed
     unsigned long getMillisBetweenRotations() const;

@@ -7,7 +7,9 @@
         "usb_descriptors.h": "c",
         "tusb_common.h": "c",
         "system_error": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "*.tcc": "cpp",
+        "istream": "cpp"
     },
     "editor.formatOnSave": false,
     "editor.formatOnType": true

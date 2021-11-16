@@ -15,7 +15,7 @@ target_link_libraries(mycropad
 )
 
 pico_enable_stdio_usb(mycropad 0)
-pico_enable_stdio_uart(mycropad 1)
+pico_enable_stdio_uart(mycropad 0)
 
 # create map/bin/hex/uf2 file etc.
 pico_add_extra_outputs(mycropad)
