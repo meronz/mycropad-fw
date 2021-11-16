@@ -5,6 +5,10 @@
         "hid_device.h": "c",
         "board.h": "c",
         "usb_descriptors.h": "c",
-        "tusb_common.h": "c"
-    }
+        "tusb_common.h": "c",
+        "system_error": "cpp",
+        "sstream": "cpp"
+    },
+    "editor.formatOnSave": false,
+    "editor.formatOnType": true
 }

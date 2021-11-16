@@ -21,7 +21,7 @@ extern "C"
 #define GPIO_ROT_SW (11)
 #define GPIO_LEDS (28)
 
-    enum Keys
+    typedef enum Keys
     {
         Key1,
         Key2,
@@ -34,7 +34,18 @@ extern "C"
         RotCW,
         RotCCW,
         RotClick,
-    };
+    } Keys;
+
+    typedef enum MessageTypes
+    {
+        NewKeymap = 1
+    } MessageTypes;
+
+    typedef enum MappingTypes
+    {
+        Macro,
+        Delay
+    } MappingTypes;
 
 #ifdef __cplusplus
 }
