@@ -1,4 +1,11 @@
-add_executable(mycropad
+add_executable(mycropad)
+
+# generate the header file into the source tree as it is included in the RP2040 datasheet
+pico_generate_pio_header(mycropad 
+    ${CMAKE_CURRENT_SOURCE_DIR}/ws2812.pio 
+    OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+
+target_sources(mycropad PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/rotary_encoder.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/usb_descriptors.c
@@ -6,10 +13,12 @@ add_executable(mycropad
 
 target_include_directories(mycropad PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/generated
 )
 
 target_link_libraries(mycropad 
     pico_stdlib
+    hardware_pio
     tinyusb_device
     tinyusb_board
 )

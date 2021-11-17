@@ -21,6 +21,9 @@ extern "C"
 #define GPIO_ROT_SW (11)
 #define GPIO_LEDS (28)
 
+#define LEDS_RGBW (false)
+#define LEDS_NUM  (2)
+
     typedef enum Keys
     {
         Key1,

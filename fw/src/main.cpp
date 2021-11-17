@@ -34,6 +34,7 @@
 #include "enums.h"
 #include "rotary_encoder.h"
 #include "keymap.h"
+#include "leds.h"
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
@@ -61,6 +62,7 @@ static uint32_t _key_events = 0;
 static uint32_t _blink_interval_ms = BLINK_NOT_MOUNTED;
 static RotaryEncoder* _encoder = nullptr;
 static Keymap* _keymap = nullptr;
+static Leds* _leds = nullptr;
 
 void led_blinking_task(void);
 void hid_task(void);
@@ -70,12 +72,13 @@ uint32_t get_gpio_events();
 /*------------- MAIN -------------*/
 int main(void)
 {
-  _keymap = new Keymap();
-  _encoder = new RotaryEncoder(GPIO_ROT_CLK, GPIO_ROT_DATA, RotaryEncoder::LatchMode::TWO03);
-
   board_init();
   mp_gpio_init();
   tusb_init();
+
+  _keymap = new Keymap();
+  _encoder = new RotaryEncoder(GPIO_ROT_CLK, GPIO_ROT_DATA, RotaryEncoder::LatchMode::TWO03);
+  _leds = new Leds(GPIO_LEDS, LEDS_RGBW, LEDS_NUM);
 
   while (1)
   {
@@ -84,6 +87,7 @@ int main(void)
 
     hid_task();
     get_gpio_events();
+    _leds->Tick();
   }
 
   return 0;
