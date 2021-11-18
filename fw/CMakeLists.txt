@@ -8,6 +8,8 @@ pico_generate_pio_header(mycropad
 target_sources(mycropad PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/rotary_encoder.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gpio.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/keymap.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/usb_descriptors.c
 )
 

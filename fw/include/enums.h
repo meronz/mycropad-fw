@@ -22,11 +22,11 @@ extern "C"
 #define GPIO_LEDS (28)
 
 #define LEDS_RGBW (false)
-#define LEDS_NUM  (2)
+#define LEDS_NUM  (8)
 
     typedef enum Keys
     {
-        Key1,
+        Key1 = 1,
         Key2,
         Key3,
         Key4,

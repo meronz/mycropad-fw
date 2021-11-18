@@ -18,7 +18,7 @@ private:
     uint _t;
     uint _currentPattern;
     uint _currentDirection;
-    const uint _refresh_interval_ms = 10;
+    const uint _refresh_interval_ms = 100;
 
 public:
     Leds(int gpio, bool isRGBW, int numLeds);
