@@ -36,16 +36,6 @@
 #include "leds.h"
 #include "gpio.h"
 
-//--------------------------------------------------------------------+
-// MACRO CONSTANT TYPEDEF PROTYPES
-//--------------------------------------------------------------------+
-
-// Interface index depends on the order in configuration descriptor
-enum
-{
-  ITF_KEYBOARD = 0,
-  ITF_MOUSE = 1
-};
 
 /* Blink pattern
  * - 250 ms  : device not mounted
@@ -60,12 +50,9 @@ enum
 };
 
 static uint32_t _blink_interval_ms = BLINK_NOT_MOUNTED;
-static Keymap *_keymap = nullptr;
-static Leds *_leds = nullptr;
-static Gpio *_gpio = nullptr;
-
 void led_blinking_task(void);
 void hid_task(void);
+void cdc_task(void);
 
 /*------------- MAIN -------------*/
 int main(void)
@@ -74,16 +61,14 @@ int main(void)
   board_init();
   tusb_init();
 
-  _keymap = new Keymap();
-  _leds = Leds::Instance();
-  _gpio = Gpio::Instance();
-
   while (1)
   {
     tud_task(); // tinyusb device task
     led_blinking_task();
-    _leds->Tick();
     hid_task();
+    cdc_task();
+
+    Leds::Instance()->Tick();
   }
 
   return 0;
@@ -121,132 +106,6 @@ void tud_resume_cb(void)
 }
 
 //--------------------------------------------------------------------+
-// USB HID
-//--------------------------------------------------------------------+
-
-void hid_task()
-{
-  // Poll every X ms
-  const uint32_t interval_ms = 10;
-  static uint32_t start_ms = 0;
-
-  if (board_millis() - start_ms < interval_ms)
-    return; // not enough time
-  start_ms += interval_ms;
-
-  static ulong lastEventMs = 0;
-  static Keymap::Keys oldEvent = Keymap::Keys::None;
-  Keymap::Keys keyEvent = _gpio->GetKeyEvent();
-
-  // Remote wakeup
-  if (tud_suspended() && keyEvent)
-  {
-    // Wake up host if we are in suspend mode
-    // and REMOTE_WAKEUP feature is enabled by host
-    tud_remote_wakeup();
-  }
-
-  if (!tud_hid_n_ready(ITF_KEYBOARD))
-  {
-    return;
-  }
-
-  // Key repeat
-  if(board_millis() - lastEventMs > 100)
-  {
-    oldEvent = Keymap::Keys::None;
-  }
-
-  // use to avoid send multiple consecutive zero report for keyboard
-  static bool hasKey = false;
-  static uint32_t* kcArray = nullptr;
-  static uint8_t kcLen = 0;
-  static uint8_t kcIndex = 0;
-
-  // sending a keycode sequence
-  uint8_t kc = 0;
-  uint8_t kmod = 0;
-  // send empty key report if previously has key pressed
-  if (hasKey)
-  {
-    tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, 0, NULL);
-    hasKey = false;
-    return;
-  }
-  
-  if (kcArray != nullptr && kcLen >= kcIndex)
-  {
-    printf("Next %d/%d\n", kcIndex, kcLen);
-    kc = KEYMAP_KEYCODE(kcArray[kcIndex]);
-    kmod = KEYMAP_MODIFIER(kcArray[kcIndex]);
-    kcIndex++;
-  }
-  else if(keyEvent != Keymap::Keys::None && keyEvent != oldEvent)
-  {
-    oldEvent = keyEvent;
-    lastEventMs = board_millis();
-    printf("event: %d\n", (int)keyEvent);
-    kcArray = _keymap->GetKeys(keyEvent);
-    kcLen = kcArray[0];
-    kcIndex = 1;
-
-    if(kcArray == nullptr)
-    {
-      printf("keycodes ptr: %p\n", kcArray);
-      kcIndex = 0;
-      kcLen = 0;
-      return;
-    }
-
-    printf("Key %d/%d\n", kcIndex, kcLen);
-    kc = KEYMAP_KEYCODE(kcArray[kcIndex]);
-    kmod = KEYMAP_MODIFIER(kcArray[kcIndex]);
-    kcIndex++;
-  }
-
-  if (kc)
-  {
-    printf("KC %x, mod %x\n", kc, kmod);
-    uint8_t key_input[6] = {kc, 0, 0, 0, 0, 0};
-    tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, kmod, key_input);
-    hasKey = true;
-  }
-  else 
-  {
-    kcArray = nullptr;
-    kcIndex = 0;
-    kcLen = 0;
-  }
-}
-
-// Invoked when received GET_REPORT control request
-// Application must fill buffer report's content and return its length.
-// Return zero will cause the stack to STALL request
-uint16_t tud_hid_get_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t *buffer, uint16_t reqlen)
-{
-  // TODO not Implemented
-  (void)itf;
-  (void)report_id;
-  (void)report_type;
-  (void)buffer;
-  (void)reqlen;
-
-  return 0;
-}
-
-// Invoked when received SET_REPORT control request or
-// received data on OUT endpoint ( Report ID = 0, Type = 0 )
-void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t report_type, uint8_t const *buffer, uint16_t bufsize)
-{
-  // TODO set LED based on CAPLOCK, NUMLOCK etc...
-  (void)itf;
-  (void)report_id;
-  (void)report_type;
-  (void)buffer;
-  (void)bufsize;
-}
-
-//--------------------------------------------------------------------+
 // BLINKING TASK
 //--------------------------------------------------------------------+
 void led_blinking_task(void)
@@ -262,5 +121,5 @@ void led_blinking_task(void)
   board_led_write(led_state);
   led_state = 1 - led_state; // toggle
 
-  printf(".");
+  printf(".\n");
 }

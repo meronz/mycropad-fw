@@ -3,8 +3,6 @@
 
 #include "tusb.h"
 
-
-
 #define KEYMAP_KEYCODE(x)    ((uint8_t)(x       & 0xFF))
 #define KEYMAP_MODIFIER(x)   ((uint8_t)(x >> 8  & 0xFF))
 #define KEYMAP_RESERVED(x)   ((uint8_t)(x >> 16 & 0xFF))
@@ -47,11 +45,20 @@ public:
         Delay
     };
 
-    Keymap();
+    static Keymap* Instance()
+    {
+        static Keymap *instance = nullptr;
+        if(instance == nullptr) {
+            instance = new Keymap();
+        }
+        return instance;
+    }
+
     uint32_t* GetKeys(Keymap::Keys key);
     bool SetKeymap(uint8_t const *new_keymap_cmd_json, uint16_t len);
 
 private:
+    Keymap();
     uint32_t* _keymap[MaxKeyNum];
     uint32_t _default_keymap[MaxKeyNum][3] = {
         /* Key1 */       { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_X) },
