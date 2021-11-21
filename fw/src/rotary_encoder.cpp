@@ -16,19 +16,10 @@
 #include "rotary_encoder.h"
 #include "hardware/gpio.h"
 #include "pico/time.h"
+#include "misc.h"
 
 #define LATCH0 0 // input state at position 0
 #define LATCH3 3 // input state at position 3
-
-static unsigned long millis()
-{
-    return (unsigned long)to_ms_since_boot(get_absolute_time());
-}
-
-static unsigned long max(unsigned long a, unsigned long b)
-{
-    return a > b ? a : b;
-}
 
 // The array holds the values �1 for the entries where a position was decremented,
 // a 1 for the entries where the position was incremented

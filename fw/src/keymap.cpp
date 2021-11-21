@@ -3,18 +3,24 @@
 #include <cstdint>
 #include <cstring>
 #include <ArduinoJson.h>
+#include "enums.h"
 
 Keymap::Keymap()
 {
     //TODO: load from flash and check CRC
-    memcpy(_keymap, _default_keymap, sizeof(_keymap));
+    for (size_t i = 0; i < MaxKeyNum; i++)
+    {
+        uint8_t size = _default_keymap[i][0] + 1;
+        _keymap[i] = new uint8_t[size];
+        memcpy(_keymap[i], _default_keymap[i], size);
+    }
 }
 
-int Keymap::GetKey(int key)
+uint8_t* Keymap::GetKeys(Keys key)
 {
-    if (key<=0 || key > Keymap::MaxKeyNum)
+    if ((int)key <= 0 || (int)key > Keymap::MaxKeyNum)
     {
-        return -1;
+        return nullptr;
     }
 
     return _keymap[key-1];
@@ -22,7 +28,7 @@ int Keymap::GetKey(int key)
 
 bool Keymap::SetKeymap(uint8_t const *new_keymap_cmd_json, uint16_t len)
 {
-    if (new_keymap_cmd_json == nullptr || len != sizeof(_keymap))
+    if (new_keymap_cmd_json == nullptr || len != sizeof(_keymap)) // fix sizeof
     {
         return false;
     }

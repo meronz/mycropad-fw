@@ -70,19 +70,18 @@ void hid_task(void);
 /*------------- MAIN -------------*/
 int main(void)
 {
+  stdio_init_all();
   board_init();
   tusb_init();
 
   _keymap = new Keymap();
   _leds = new Leds(GPIO_LEDS, LEDS_RGBW, LEDS_NUM);
-  _gpio = new Gpio();
+  _gpio = Gpio::Instance();
 
   while (1)
   {
     tud_task(); // tinyusb device task
     led_blinking_task();
-
-    _gpio->Tick();
     _leds->Tick();
     hid_task();
   }
@@ -127,7 +126,7 @@ void tud_resume_cb(void)
 
 void hid_task()
 {
-  // Poll every 10ms
+  // Poll every X ms
   const uint32_t interval_ms = 10;
   static uint32_t start_ms = 0;
 
@@ -135,10 +134,12 @@ void hid_task()
     return; // not enough time
   start_ms += interval_ms;
 
-  uint32_t key_event = _gpio->GetKeyEvent();
+  static ulong lastEventMs = 0;
+  static Keymap::Keys oldEvent = Keymap::Keys::None;
+  Keymap::Keys keyEvent = _gpio->GetKeyEvent();
 
   // Remote wakeup
-  if (tud_suspended() && key_event)
+  if (tud_suspended() && keyEvent)
   {
     // Wake up host if we are in suspend mode
     // and REMOTE_WAKEUP feature is enabled by host
@@ -150,27 +151,68 @@ void hid_task()
     return;
   }
 
-  // use to avoid send multiple consecutive zero report for keyboard
-  static bool has_key = false;
-
-  if (key_event)
+  // Key repeat
+  if(board_millis() - lastEventMs > 100)
   {
-    uint8_t keycode = _keymap->GetKey(key_event);
-
-    if (keycode == -1)
-      return;
-
-    uint8_t key_input[6] = {keycode, 0, 0, 0, 0, 0};
-    tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, 0, key_input);
-
-    has_key = true;
+    oldEvent = Keymap::Keys::None;
   }
-  else
+
+  // use to avoid send multiple consecutive zero report for keyboard
+  static bool hasKey = false;
+  static uint8_t* kcArray = nullptr;
+  static uint8_t kcLen = 0;
+  static uint8_t kcIndex = 0;
+
+  // sending a keycode sequence
+  uint8_t kc = 0;
+  // send empty key report if previously has key pressed
+  if (hasKey)
   {
-    // send empty key report if previously has key pressed
-    if (has_key)
-      tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, 0, NULL);
-    has_key = false;
+    tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, 0, NULL);
+    hasKey = false;
+    return;
+  }
+  
+  if (kcArray != nullptr && kcLen >= kcIndex)
+  {
+    printf("Next %d/%d\n", kcIndex, kcLen);
+    kc = kcArray[kcIndex];
+    kcIndex++;
+  }
+  else if(keyEvent != Keymap::Keys::None && keyEvent != oldEvent)
+  {
+    oldEvent = keyEvent;
+    lastEventMs = board_millis();
+    printf("event: %d\n", (int)keyEvent);
+    kcArray = _keymap->GetKeys(keyEvent);
+    kcLen = kcArray[0];
+    kcIndex = 1;
+
+    if(kcArray == nullptr)
+    {
+      printf("keycodes ptr: %p\n", kcArray);
+      kcIndex = 0;
+      kcLen = 0;
+      return;
+    }
+
+    printf("Key %d/%d\n", kcIndex, kcLen);
+    kc = kcArray[kcIndex];
+    kcIndex++;
+  }
+
+  if (kc)
+  {
+    printf("KC %x\n", kc);
+    uint8_t key_input[6] = {kc, 0, 0, 0, 0, 0};
+    tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, 0, key_input);
+    hasKey = true;
+  }
+  else 
+  {
+    kcArray = nullptr;
+    kcIndex = 0;
+    kcLen = 0;
   }
 }
 
@@ -216,4 +258,6 @@ void led_blinking_task(void)
 
   board_led_write(led_state);
   led_state = 1 - led_state; // toggle
+
+  printf(".");
 }

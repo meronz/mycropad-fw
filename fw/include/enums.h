@@ -24,21 +24,6 @@ extern "C"
 #define LEDS_RGBW (false)
 #define LEDS_NUM  (8)
 
-    typedef enum Keys
-    {
-        Key1 = 1,
-        Key2,
-        Key3,
-        Key4,
-        Key5,
-        Key6,
-        Key7,
-        Key8,
-        RotCW,
-        RotCCW,
-        RotClick,
-    } Keys;
-
     typedef enum MessageTypes
     {
         NewKeymap = 1
