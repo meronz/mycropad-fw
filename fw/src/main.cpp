@@ -159,12 +159,13 @@ void hid_task()
 
   // use to avoid send multiple consecutive zero report for keyboard
   static bool hasKey = false;
-  static uint8_t* kcArray = nullptr;
+  static uint32_t* kcArray = nullptr;
   static uint8_t kcLen = 0;
   static uint8_t kcIndex = 0;
 
   // sending a keycode sequence
   uint8_t kc = 0;
+  uint8_t kmod = 0;
   // send empty key report if previously has key pressed
   if (hasKey)
   {
@@ -176,7 +177,8 @@ void hid_task()
   if (kcArray != nullptr && kcLen >= kcIndex)
   {
     printf("Next %d/%d\n", kcIndex, kcLen);
-    kc = kcArray[kcIndex];
+    kc = KEYMAP_KEYCODE(kcArray[kcIndex]);
+    kmod = KEYMAP_MODIFIER(kcArray[kcIndex]);
     kcIndex++;
   }
   else if(keyEvent != Keymap::Keys::None && keyEvent != oldEvent)
@@ -197,15 +199,16 @@ void hid_task()
     }
 
     printf("Key %d/%d\n", kcIndex, kcLen);
-    kc = kcArray[kcIndex];
+    kc = KEYMAP_KEYCODE(kcArray[kcIndex]);
+    kmod = KEYMAP_MODIFIER(kcArray[kcIndex]);
     kcIndex++;
   }
 
   if (kc)
   {
-    printf("KC %x\n", kc);
+    printf("KC %x, mod %x\n", kc, kmod);
     uint8_t key_input[6] = {kc, 0, 0, 0, 0, 0};
-    tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, 0, key_input);
+    tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, kmod, key_input);
     hasKey = true;
   }
   else 

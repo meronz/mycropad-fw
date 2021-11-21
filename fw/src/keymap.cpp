@@ -11,12 +11,12 @@ Keymap::Keymap()
     for (size_t i = 0; i < MaxKeyNum; i++)
     {
         uint8_t size = _default_keymap[i][0] + 1;
-        _keymap[i] = new uint8_t[size];
-        memcpy(_keymap[i], _default_keymap[i], size);
+        _keymap[i] = new uint32_t[size];
+        memcpy(_keymap[i], _default_keymap[i], size * sizeof(uint32_t));
     }
 }
 
-uint8_t* Keymap::GetKeys(Keys key)
+uint32_t* Keymap::GetKeys(Keys key)
 {
     if ((int)key <= 0 || (int)key > Keymap::MaxKeyNum)
     {
