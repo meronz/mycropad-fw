@@ -5,7 +5,7 @@
 #include "pico/stdlib.h"
 #include "bsp/board.h"
 #include "rotary_encoder.h"
-#include "enums.h"
+#include "consts.h"
 #include "keymap.h"
 
 #define CHECK_MSEC    5         // Read hardware every 5 msec

@@ -1,12 +1,10 @@
-#ifndef ENUMS_H
-#define ENUMS_H
+#ifndef CONSTS_H
+#define CONSTS_H
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-#include <stdint.h>
 
 #define GPIO_SW_1 (1)
 #define GPIO_SW_2 (2)
@@ -23,17 +21,6 @@ extern "C"
 
 #define LEDS_RGBW (false)
 #define LEDS_NUM  (8)
-
-    typedef enum MessageTypes
-    {
-        NewKeymap = 1
-    } MessageTypes;
-
-    typedef enum MappingTypes
-    {
-        Macro,
-        Delay
-    } MappingTypes;
 
 #ifdef __cplusplus
 }

@@ -6,6 +6,7 @@
 class Keymap
 {
 public:
+    static const int MaxKeyNum = 11;
 
     enum Keys
     {
@@ -22,13 +23,21 @@ public:
         RotCCW,
         RotClick,
     };
-    static const int MaxKeyNum = 11;
+
+    enum MessageTypes
+    {
+        NewKeymap = 1
+    };
+
+    enum MappingTypes
+    {
+        Macro,
+        Delay
+    };
 
     Keymap();
     uint8_t* GetKeys(Keymap::Keys key);
     bool SetKeymap(uint8_t const *new_keymap_cmd_json, uint16_t len);
-
-
 
 private:
     uint8_t* _keymap[MaxKeyNum];

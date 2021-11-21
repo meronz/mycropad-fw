@@ -31,7 +31,7 @@
 #include "bsp/board.h"
 #include "tusb.h"
 
-#include "enums.h"
+#include "consts.h"
 #include "keymap.h"
 #include "leds.h"
 #include "gpio.h"
@@ -75,7 +75,7 @@ int main(void)
   tusb_init();
 
   _keymap = new Keymap();
-  _leds = new Leds(GPIO_LEDS, LEDS_RGBW, LEDS_NUM);
+  _leds = Leds::Instance();
   _gpio = Gpio::Instance();
 
   while (1)

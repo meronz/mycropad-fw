@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <cstring>
 #include <ArduinoJson.h>
-#include "enums.h"
+#include "consts.h"
 
 Keymap::Keymap()
 {
