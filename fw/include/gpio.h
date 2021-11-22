@@ -15,7 +15,7 @@
 class Gpio
 {
 private:
-    Gpio();
+    Gpio(){}
     ~Gpio();
 
     uint32_t _key_events;
@@ -43,6 +43,7 @@ public:
         if(instance == nullptr) { instance = new Gpio(); }
         return instance;
     }
+    void Init();
     void Tick();
     void RotaryEncoderTick();
     Keymap::Keys GetKeyEvent();

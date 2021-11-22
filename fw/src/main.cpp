@@ -58,8 +58,11 @@ void cdc_task(void);
 int main(void)
 {
   stdio_init_all();
-  board_init();
   tusb_init();
+
+  Gpio::Instance()->Init();
+  Leds::Instance()->Init();
+  Keymap::Instance()->Load();
 
   while (1)
   {
@@ -67,7 +70,7 @@ int main(void)
     led_blinking_task();
     hid_task();
     cdc_task();
-
+    Keymap::Instance();
     Leds::Instance()->Tick();
   }
 
@@ -120,6 +123,4 @@ void led_blinking_task(void)
 
   board_led_write(led_state);
   led_state = 1 - led_state; // toggle
-
-  printf(".\n");
 }

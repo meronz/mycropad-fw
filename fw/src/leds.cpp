@@ -60,7 +60,7 @@ void pattern_rainbow(uint len)
 typedef void (*pattern)(uint len);
 pattern patterns[] = { pattern_rainbow };
 
-Leds::Leds()
+void Leds::Init()
 {
     _gpio = GPIO_LEDS;
     _isRGBW = LEDS_RGBW;

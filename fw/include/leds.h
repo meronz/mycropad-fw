@@ -3,7 +3,7 @@
 class Leds
 {
 private:
-    Leds();
+    Leds() { }
     int _gpio;
     bool _isRGBW;
     int _numLeds;
@@ -20,6 +20,7 @@ public:
         }
         return instance;
     }
+    void Init();
     void Tick();
 };
 

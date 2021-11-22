@@ -9,6 +9,7 @@ extern "C"
 
 unsigned long millis();
 unsigned long max(unsigned long a, unsigned long b);
+uint32_t crc32(const void *buf, size_t size);
 
 #ifdef __cplusplus
 }

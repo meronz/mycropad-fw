@@ -13,6 +13,8 @@
     (code & 0xFF)\
     ))
 
+typedef uint32_t keycode_t;
+
 class Keymap
 {
 public:
@@ -54,24 +56,27 @@ public:
         return instance;
     }
 
-    uint32_t* GetKeys(Keymap::Keys key);
+    keycode_t* GetKeys(Keymap::Keys key);
     bool SetKeymap(uint8_t const *new_keymap_cmd_json, uint16_t len);
+    void Save();
+    void Load();
+    void LoadDefault();
 
 private:
     Keymap();
-    uint32_t* _keymap[MaxKeyNum];
-    uint32_t _default_keymap[MaxKeyNum][3] = {
-        /* Key1 */       { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_X) },
-        /* Key2 */       { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_C) },
-        /* Key3 */       { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_V) },
-        /* Key4 */       { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_D) },
-        /* Key5 */       { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_E) },
-        /* Key6 */       { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_F) },
-        /* Key7 */       { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_G) },
-        /* Key8 */       { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_H) },
-        /* RotCW */      { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_Y) },
-        /* RotCCW */     { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_Z) },
-        /* RotClick */   { 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_X) },
+    keycode_t* _keymap[MaxKeyNum];
+    keycode_t _default_keymap[MaxKeyNum][2] = {
+        /* Key1 */       { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_X) },
+        /* Key2 */       { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_C) },
+        /* Key3 */       { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_V) },
+        /* Key4 */       { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_D) },
+        /* Key5 */       { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_E) },
+        /* Key6 */       { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_F) },
+        /* Key7 */       { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_G) },
+        /* Key8 */       { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_H) },
+        /* RotCW */      { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_Y) },
+        /* RotCCW */     { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_Z) },
+        /* RotClick */   { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_X) },
     };
 };
 

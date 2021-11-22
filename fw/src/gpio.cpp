@@ -16,7 +16,7 @@ void _gpio_callback(uint gpio, uint32_t events)
     Gpio::Instance()->RotaryEncoderTick();
 }
 
-Gpio::Gpio()
+void Gpio::Init()
 {
     _key_events = 0;
     gpio_init(PICO_DEFAULT_LED_PIN);

@@ -25,6 +25,8 @@ target_include_directories(mycropad PRIVATE
 target_link_libraries(mycropad 
     pico_stdlib
     hardware_pio
+    hardware_flash
+    hardware_sync
     tinyusb_device
     tinyusb_board
 )
