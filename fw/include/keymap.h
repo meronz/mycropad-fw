@@ -13,7 +13,7 @@
     (code & 0xFF)\
     ))
 
-typedef uint32_t keycode_t;
+typedef uint16_t keycode_t;
 
 class Keymap
 {

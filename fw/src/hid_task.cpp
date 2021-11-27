@@ -48,7 +48,7 @@ void hid_task()
 
   // use to avoid send multiple consecutive zero report for keyboard
   static bool hasKey = false;
-  static uint32_t* kcArray = nullptr;
+  static keycode_t* kcArray = nullptr;
   static uint8_t kcLen = 0;
   static uint8_t kcIndex = 0;
 
