@@ -10,10 +10,9 @@
 
 Keymap::Keymap()
 {
-
 }
 
-keycode_t* Keymap::GetKeys(Keys key)
+keycode_t *Keymap::GetKeys(Keys key)
 {
     if ((int)key <= 0 || (int)key > Keymap::MaxKeyNum)
     {
@@ -34,7 +33,7 @@ bool Keymap::SetKeymap(uint8_t const *newKeymap)
     for (int keyIndex = 0; keyIndex < Keymap::MaxKeyNum; keyIndex++)
     {
         uint8_t len = newKeymap[readOffset];
-        if(len == 0 || len > Keymap::MaxKeycodesNum)
+        if (len == 0 || len > Keymap::MaxKeycodesNum)
         {
             printf("Len 0");
             return false;
@@ -44,7 +43,7 @@ bool Keymap::SetKeymap(uint8_t const *newKeymap)
         keymap[0] = len;
 
         size_t size = len * sizeof(keycode_t);
-        memcpy(keymap, newKeymap+readOffset, size);
+        memcpy(keymap, newKeymap + readOffset, size);
         printf("Set keymap of size %u\n", len);
         readOffset += size;
     }
@@ -59,11 +58,10 @@ bool Keymap::SetKeymap(uint8_t const *newKeymap)
 
 #define NEXT_MULTIPLE(n, x) (n % x ? (n + (x - n % x)) : n)
 
-
 // Keymap is stored in the following format
 // |   CRC    |  Length  |  Data
-// | 4 bytes  | 4 bytes  |  data for lenght * 4 bytes
-// 
+// | 4 bytes  | 4 bytes  |  data for the whole keymap size (number of keycodes * keycode size)
+//
 // Lenght is the number of words stored
 
 void Keymap::Load()
@@ -72,8 +70,8 @@ void Keymap::Load()
 
     // XIP Flash can be read from memory,
     // lets start reading the crc and keymap lenght
-    volatile uint32_t crc = *((uint32_t*)KEYMAP_FLASH_ADDR);
-    volatile uint32_t keymapLength = *(uint32_t*)(KEYMAP_FLASH_ADDR + sizeof(uint32_t));
+    volatile uint32_t crc = *((uint32_t *)KEYMAP_FLASH_ADDR);
+    volatile uint32_t keymapLength = *(uint32_t *)(KEYMAP_FLASH_ADDR + sizeof(uint32_t));
 
     if (keymapLength > (MaxKeycodesNum * MaxKeyNum))
     {
@@ -82,11 +80,9 @@ void Keymap::Load()
         return;
     }
 
+    // Do not include CRC
     off += sizeof(crc);
-    uint32_t calculatedCrc = crc32(
-        KEYMAP_FLASH_ADDR + off,            // Do not include CRC
-        sizeof(keymapLength)
-        + (keymapLength * sizeof(keycode_t)));
+    uint32_t calculatedCrc = crc32(KEYMAP_FLASH_ADDR + off, sizeof(keymapLength) + sizeof(_keymap));
     if (crc != calculatedCrc)
     {
         printf("Wrong CRC %x != %x\n", crc, calculatedCrc);
@@ -95,21 +91,8 @@ void Keymap::Load()
     }
 
     off += sizeof(keymapLength);
-    for (size_t i = 0; i < MaxKeyNum; i++)
-    {
-        uint32_t* keycodes = (uint32_t *)(KEYMAP_FLASH_ADDR + off);
-        uint8_t len = keycodes[0];
-        if(len == 0 || len > Keymap::MaxKeycodesNum)
-        {
-            printf("Bad keymap[%u] len %u\n", i, len);
-            LoadDefault();
-            return;
-        }
-        uint8_t size = len * sizeof(keycode_t);
-        memcpy(_keymap[i], keycodes, size);
-        off += size;
-        printf("Loaded keymap[%u] of len %u\n", i, len);
-    }
+    memcpy(_keymap, KEYMAP_FLASH_ADDR + off, sizeof(_keymap));
+    printf("Loaded keymap len %u\n", keymapLength);
 }
 
 void Keymap::LoadDefault()
@@ -117,6 +100,7 @@ void Keymap::LoadDefault()
     for (size_t i = 0; i < MaxKeyNum; i++)
     {
         uint8_t len = _default_keymap[i][0];
+        memset(_keymap[i], 0, sizeof(_keymap[i]));
         memcpy(_keymap[i], _default_keymap[i], len * sizeof(keycode_t));
     }
 
@@ -126,6 +110,7 @@ void Keymap::LoadDefault()
 
 void Keymap::Save()
 {
+    uint32_t crc = 0;
     // calculate total keymap length
     uint32_t keymapLength = 0;
     for (size_t i = 0; i < MaxKeyNum; i++)
@@ -137,38 +122,31 @@ void Keymap::Save()
     // flash_range_program will write a multiple of the page size, so
     // we allocate a buffer big enough to store our keymap rounded
     // to the next page.
-    uint32_t dataSize = NEXT_MULTIPLE((keymapLength + 2) * sizeof(keycode_t), FLASH_PAGE_SIZE);
-    uint8_t *tmpBuf = new uint8_t[dataSize];
-    memset(tmpBuf, 0, dataSize);
+    size_t dataSize = sizeof(crc) + sizeof(keymapLength) + sizeof(_keymap);
+    size_t flashDataSize = NEXT_MULTIPLE(dataSize, FLASH_PAGE_SIZE);
+    uint32_t *tmpBuf = (uint32_t *)malloc(flashDataSize);
+    memset(tmpBuf, 0, flashDataSize);
 
     // write keymap length, will be included in CRC
-    *((uint32_t *)(tmpBuf + sizeof(keymapLength))) = keymapLength;
+    tmpBuf[1] = keymapLength;
 
     // start writing keymap data after crc + len
-    uint32_t off = sizeof(uint32_t) + sizeof(keymapLength);
-    for (size_t i = 0; i < MaxKeyNum; i++)
-    {
-        uint8_t size = _keymap[i][0] * sizeof(keycode_t);
-        memcpy(((uint8_t *)tmpBuf) + off, (const uint8_t *)_keymap[i], size);
-        off += size;
-    }
+    memcpy(tmpBuf + 2, _keymap, sizeof(_keymap));
 
     // calculate crc
-    uint32_t crc = crc32(tmpBuf + sizeof(crc), 
-        sizeof(keymapLength)
-        + (keymapLength * sizeof(keycode_t)));
-    *((uint32_t *)tmpBuf) = crc;
+    crc = crc32(tmpBuf + 1, dataSize - sizeof(crc));
+    tmpBuf[0] = crc;
 
-    printf("Saving keymap: bytes %u (crc %u)\n", dataSize, crc);
+    printf("Saving keymap: bytes %u (crc %x)\n", dataSize, crc);
     uint32_t ints = save_and_disable_interrupts();
     {
         // flash_range_erase count must be a multiple of FLASH_SECTOR_SIZE
-        flash_range_erase(KEYMAP_FLASH_OFFSET, NEXT_MULTIPLE(dataSize, FLASH_SECTOR_SIZE));
+        flash_range_erase(KEYMAP_FLASH_OFFSET, NEXT_MULTIPLE(flashDataSize, FLASH_SECTOR_SIZE));
         // flash_range_program count must be a multiple of FLASH_PAGE_SIZE
-        flash_range_program(KEYMAP_FLASH_OFFSET, tmpBuf, dataSize);
+        flash_range_program(KEYMAP_FLASH_OFFSET, (const uint8_t *)tmpBuf, flashDataSize);
     }
     restore_interrupts(ints);
 
     printf("Saved keymap\n");
-    delete[] tmpBuf;
+    free(tmpBuf);
 }

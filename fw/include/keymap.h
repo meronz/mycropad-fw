@@ -19,7 +19,7 @@ class Keymap
 {
 public:
     static const int MaxKeyNum = 11;
-    static const int MaxKeycodesNum = 100;
+    static const int MaxKeycodesNum = 10;
 
     enum Keys
     {
