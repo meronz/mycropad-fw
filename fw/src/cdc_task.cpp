@@ -10,7 +10,10 @@
 
 enum MessageTypes
 {
-  NewKeymap = 1
+  Heartbeat = 0,
+  NewKeymap = 1,
+  ReadKeymap = 2,
+  DefaultKeymap = 3,
 };
 
 #define CDC_BUFFER_SIZE 4096
@@ -18,20 +21,80 @@ static uint8_t _buffer[CDC_BUFFER_SIZE];
 uint16_t _offset = 0;
 bool stx_received = false;
 
-bool parse_data(void)
+uint8_t *prepare_buffer_for_response(uint8_t cmd, bool ok, size_t responseSize)
 {
+  _buffer[0] = 0x2; // STX
+  _buffer[1] = cmd;
+  _buffer[2] = ok ? 0 : 0xFF;
+  _buffer[3] = (responseSize)&0xFF;
+  _buffer[4] = (responseSize >> 8) & 0xFF;
+  _buffer[5] = (responseSize >> 16) & 0xFF;
+  _buffer[6] = (responseSize >> 24) & 0xFF;
+
+  _buffer[7 + responseSize] = 0x3; //ETX
+
+  return _buffer + 7;
+}
+
+void parse_data()
+{
+  bool ok = false;
   uint8_t cmd = _buffer[1];
+  size_t responseSize = 0;
+
+  printf("parse_data: %x\n", cmd);
   switch (cmd)
   {
+  case Heartbeat:
+  {
+    prepare_buffer_for_response(cmd, true, 0);
+    break;
+  }
+  case ReadKeymap:
+  {
+    responseSize = CDC_BUFFER_SIZE;
+    memset(_buffer, 0xCF, CDC_BUFFER_SIZE);
+    uint8_t *responseBuf = prepare_buffer_for_response(cmd, false, 0);
+    ok = Keymap::Instance()->ReadKeymap(responseBuf, &responseSize);
+    prepare_buffer_for_response(cmd, ok, responseSize);
+    break;
+  }
   case NewKeymap:
   {
-    return Keymap::Instance()->SetKeymap(_buffer+2);
+    ok = Keymap::Instance()->SetKeymap(_buffer + 2);
+    prepare_buffer_for_response(cmd, ok, 0);
+    break;
+  }
+  case DefaultKeymap:
+  {
+    ok = true;
+    Keymap::Instance()->LoadDefault();
+    prepare_buffer_for_response(cmd, ok, 0);
+    break;
   }
   default:
     break;
   }
 
-  return false;
+  responseSize += 8;
+  
+  // send data
+  printf("parse_data: responding with %u bytes\n", responseSize);
+  size_t sendOffset = 0;
+  size_t toSend;
+  do
+  {
+    size_t remaining = responseSize - sendOffset;
+    toSend = 64 < remaining ? 64 : remaining;
+    if (toSend == 0)
+    {
+      break;
+    }
+    tud_cdc_write(_buffer + sendOffset, toSend);
+    tud_cdc_write_flush();
+    board_delay(5);
+    sendOffset += toSend;
+  } while (true);
 }
 
 void cdc_task(void)
@@ -67,13 +130,8 @@ void cdc_task(void)
         // etx received
         if (_buffer[_offset - 1] == 0x03)
         {
-          bool ok = parse_data();
+          parse_data();
           _offset = 0;
-
-          char response[1];
-          response[0] = ok;
-          tud_cdc_write(response, sizeof(response));
-          tud_cdc_write_flush();
         }
       }
     }

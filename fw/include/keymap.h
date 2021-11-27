@@ -53,6 +53,7 @@ public:
     }
 
     keycode_t* GetKeys(Keymap::Keys key);
+    bool ReadKeymap(uint8_t* buffer, size_t *size);
     bool SetKeymap(uint8_t const *newKeymap);
     void Save();
     void Load();
@@ -60,7 +61,7 @@ public:
 
 private:
     Keymap();
-    keycode_t _keymap[MaxKeyNum][1 + (MaxKeycodesNum * sizeof(keycode_t))];
+    keycode_t _keymap[MaxKeyNum][1 + MaxKeycodesNum];
     keycode_t _default_keymap[MaxKeyNum][2] = {
         /* Key1 */       { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_X) },
         /* Key2 */       { 1 + 1, KEYMAP_ENTRY(KEYBOARD_MODIFIER_LEFTCTRL, HID_KEY_C) },

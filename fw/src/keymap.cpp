@@ -52,6 +52,19 @@ bool Keymap::SetKeymap(uint8_t const *newKeymap)
     return true;
 }
 
+bool Keymap::ReadKeymap(uint8_t* buffer, size_t *size)
+{
+    if(*size< sizeof(_keymap))
+    {
+        *size = 0;
+        return false;
+    }
+
+    memcpy(buffer, _keymap, sizeof(_keymap));
+    *size = sizeof(_keymap);
+    return true;
+}
+
 #define RESERVED_SPACE (16 * 1024)
 #define KEYMAP_FLASH_OFFSET ((256 * 1024) - RESERVED_SPACE)
 #define KEYMAP_FLASH_ADDR ((const uint8_t *)(XIP_BASE + KEYMAP_FLASH_OFFSET))
