@@ -10,13 +10,10 @@
 
 Keymap::Keymap()
 {
-    for (size_t i = 0; i < MaxKeyNum; i++)
-    {
-        _keymap[i] = nullptr;
-    }
+
 }
 
-uint32_t *Keymap::GetKeys(Keys key)
+keycode_t* Keymap::GetKeys(Keys key)
 {
     if ((int)key <= 0 || (int)key > Keymap::MaxKeyNum)
     {
@@ -26,56 +23,33 @@ uint32_t *Keymap::GetKeys(Keys key)
     return _keymap[key - 1];
 }
 
-bool Keymap::SetKeymap(uint8_t const *new_keymap_cmd_json, uint16_t len)
+bool Keymap::SetKeymap(uint8_t const *newKeymap)
 {
-    if (new_keymap_cmd_json == nullptr || len != sizeof(_keymap)) // fix sizeof
+    if (newKeymap == nullptr)
     {
         return false;
     }
 
-    // DynamicJsonDocument doc(1024);
-    // DeserializationError error = deserializeJson(doc, (char *)new_keymap_cmd_json); //the cast is a bad idea
-    // if (error)
-    // {
-    //     printf(error.c_str());
-    //     return false;
-    // }
+    uint32_t readOffset = 0;
+    for (int keyIndex = 0; keyIndex < Keymap::MaxKeyNum; keyIndex++)
+    {
+        uint8_t len = newKeymap[readOffset];
+        if(len == 0 || len > Keymap::MaxKeycodesNum)
+        {
+            printf("Len 0");
+            return false;
+        }
 
-    // for (int keyNumber = 0; keyNumber < MaxKeyNum; keyNumber++)
-    // {
-    //     if (_keymap[keyNumber])
-    //     {
-    //         delete _keymap[keyNumber];
-    //     }
+        keycode_t *keymap = _keymap[keyIndex];
+        keymap[0] = len;
 
-    //     int mappingType = doc[keyNumber]["Type"];
-    //     switch (mappingType)
-    //     {
-    //     case MappingTypes::Macro:
-    //     {
-    //         int len = doc[keyNumber]["Length"];
-    //         if (len < 0)
-    //             continue;
+        size_t size = len * sizeof(keycode_t);
+        memcpy(keymap, newKeymap+readOffset, size);
+        printf("Set keymap of size %u\n", len);
+        readOffset += size;
+    }
 
-    //         _keymap[keyNumber] = new uint8_t[len + 1];
-    //         JsonArray keycodes = doc[keyNumber]["Keycodes"];
-    //         for (int kIndex = 0; kIndex < len; kIndex++)
-    //         {
-    //             _keymap[keyNumber][kIndex] = keycodes[kIndex];
-    //         }
-    //         _keymap[keyNumber][len] = 0; // end the array
-
-    //         break;
-    //     }
-    //     case MappingTypes::Delay:
-    //         break;
-    //     default:
-    //         break;
-    //     }
-    // }
-
-    // //TODO: ADD CRC
-    // //TODO: write to flash
+    Save();
     return true;
 }
 
@@ -101,7 +75,7 @@ void Keymap::Load()
     volatile uint32_t crc = *((uint32_t*)KEYMAP_FLASH_ADDR);
     volatile uint32_t keymapLength = *(uint32_t*)(KEYMAP_FLASH_ADDR + sizeof(uint32_t));
 
-    if (keymapLength > (255 * MaxKeyNum))
+    if (keymapLength > (MaxKeycodesNum * MaxKeyNum))
     {
         printf("Insane size %d\n", keymapLength);
         LoadDefault();
@@ -123,16 +97,16 @@ void Keymap::Load()
     off += sizeof(keymapLength);
     for (size_t i = 0; i < MaxKeyNum; i++)
     {
-        if (_keymap[i] != nullptr)
-        {
-            delete _keymap[i];
-        }
-
         uint32_t* keycodes = (uint32_t *)(KEYMAP_FLASH_ADDR + off);
-        volatile uint8_t len = keycodes[0];
-        volatile uint8_t size = len * sizeof(keycode_t);
-        _keymap[i] = new keycode_t[len];
-        memcpy(_keymap[i], KEYMAP_FLASH_ADDR + off, size);
+        uint8_t len = keycodes[0];
+        if(len == 0 || len > Keymap::MaxKeycodesNum)
+        {
+            printf("Bad keymap[%u] len %u\n", i, len);
+            LoadDefault();
+            return;
+        }
+        uint8_t size = len * sizeof(keycode_t);
+        memcpy(_keymap[i], keycodes, size);
         off += size;
         printf("Loaded keymap[%u] of len %u\n", i, len);
     }
@@ -142,12 +116,7 @@ void Keymap::LoadDefault()
 {
     for (size_t i = 0; i < MaxKeyNum; i++)
     {
-        if (_keymap[i] != nullptr)
-        {
-            delete _keymap[i];
-        }
         uint8_t len = _default_keymap[i][0];
-        _keymap[i] = new keycode_t[len];
         memcpy(_keymap[i], _default_keymap[i], len * sizeof(keycode_t));
     }
 
@@ -201,5 +170,5 @@ void Keymap::Save()
     restore_interrupts(ints);
 
     printf("Saved keymap\n");
-    delete tmpBuf;
+    delete[] tmpBuf;
 }

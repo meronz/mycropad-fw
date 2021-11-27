@@ -76,7 +76,7 @@ void hid_task()
     lastEventMs = board_millis();
     printf("event: %d\n", (int)keyEvent);
     kcArray = Keymap::Instance()->GetKeys(keyEvent);
-    kcLen = kcArray[0];
+    kcLen = kcArray[0]-1;
     kcIndex = 1;
 
     if(kcArray == nullptr)
