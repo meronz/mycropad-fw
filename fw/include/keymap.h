@@ -37,12 +37,6 @@ public:
         RotClick,
     };
 
-    enum MappingTypes
-    {
-        Macro,
-        Delay
-    };
-
     static Keymap* Instance()
     {
         static Keymap *instance = nullptr;
@@ -54,7 +48,7 @@ public:
 
     keycode_t* GetKeys(Keymap::Keys key);
     bool ReadKeymap(uint8_t* buffer, size_t *size);
-    bool SetKeymap(uint8_t const *newKeymap);
+    bool SetKeymap(uint8_t const *newKeymap, bool persist = false);
     void Save();
     void Load();
     void LoadDefault();

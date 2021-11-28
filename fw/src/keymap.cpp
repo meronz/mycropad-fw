@@ -22,7 +22,7 @@ keycode_t *Keymap::GetKeys(Keys key)
     return _keymap[key - 1];
 }
 
-bool Keymap::SetKeymap(uint8_t const *newKeymap)
+bool Keymap::SetKeymap(uint8_t const *newKeymap, bool persist)
 {
     if (newKeymap == nullptr)
     {
@@ -47,8 +47,10 @@ bool Keymap::SetKeymap(uint8_t const *newKeymap)
         printf("Set keymap of size %u\n", len);
         readOffset += size;
     }
-
-    Save();
+    
+    if(persist) {
+        Save();
+    }
     return true;
 }
 

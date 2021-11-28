@@ -11,9 +11,10 @@
 enum MessageTypes
 {
   Heartbeat = 0,
-  NewKeymap = 1,
+  SetKeymap = 1,
   ReadKeymap = 2,
   DefaultKeymap = 3,
+  SwitchKeymap = 4,
 };
 
 #define CDC_BUFFER_SIZE 4096
@@ -59,9 +60,11 @@ void parse_data()
     prepare_buffer_for_response(cmd, ok, responseSize);
     break;
   }
-  case NewKeymap:
+  case SetKeymap:
+  case SwitchKeymap:
   {
-    ok = Keymap::Instance()->SetKeymap(_buffer + 2);
+    bool persist = cmd == SetKeymap;
+    ok = Keymap::Instance()->SetKeymap(_buffer + 2, persist);
     prepare_buffer_for_response(cmd, ok, 0);
     break;
   }
