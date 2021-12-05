@@ -70,7 +70,6 @@ int main(void)
     led_blinking_task();
     hid_task();
     cdc_task();
-    Keymap::Instance();
     Leds::Instance()->Tick();
   }
 

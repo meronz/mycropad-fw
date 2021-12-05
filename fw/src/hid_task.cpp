@@ -16,7 +16,7 @@
 void hid_task()
 {
   // Poll every X ms
-  const uint32_t interval_ms = 10;
+  const uint32_t interval_ms = 5;
   static uint32_t start_ms = 0;
 
   if (board_millis() - start_ms < interval_ms)
@@ -41,7 +41,10 @@ void hid_task()
   }
 
   // Key repeat
-  if(board_millis() - lastEventMs > 100)
+  // Rotary encoder keys are not subject to repeat-rate
+  if(board_millis() - lastEventMs > 100
+  || keyEvent != Keymap::Keys::RotCCW
+  || keyEvent != Keymap::Keys::RotCW)
   {
     oldEvent = Keymap::Keys::None;
   }
