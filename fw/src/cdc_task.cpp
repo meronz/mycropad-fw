@@ -7,6 +7,7 @@
 #include "tusb.h"
 
 #include "keymap.h"
+#include "leds.h"
 
 enum MessageTypes
 {
@@ -15,6 +16,10 @@ enum MessageTypes
   ReadKeymap = 2,
   DefaultKeymap = 3,
   SwitchKeymap = 4,
+
+
+  LedsSwitchPattern = 50,
+  LedsSetFixedMap = 51,
 };
 
 #define CDC_BUFFER_SIZE 4096
@@ -72,6 +77,19 @@ void parse_data()
   {
     ok = true;
     Keymap::Instance()->LoadDefault();
+    prepare_buffer_for_response(cmd, ok, 0);
+    break;
+  }
+  case LedsSwitchPattern:
+  {
+    int pattern = _buffer[2];
+    ok = Leds::Instance()->SwitchPattern(pattern);
+    prepare_buffer_for_response(cmd, ok, 0);
+    break;
+  }
+  case LedsSetFixedMap:
+  {
+    ok = Leds::Instance()->SetFixedMap(_buffer + 2);
     prepare_buffer_for_response(cmd, ok, 0);
     break;
   }

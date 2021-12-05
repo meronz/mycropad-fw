@@ -1,5 +1,6 @@
 #ifndef LEDS_H
 #define LEDS_H
+
 class Leds
 {
 private:
@@ -20,8 +21,11 @@ public:
         }
         return instance;
     }
+
     void Init();
     void Tick();
+    bool SwitchPattern(int pattern);
+    bool SetFixedMap(uint8_t *map);
 };
 
 #endif //LEDS_H
