@@ -32,8 +32,8 @@ target_link_libraries(mycropad
 )
 
 target_compile_definitions(mycropad PUBLIC PICO_DEFAULT_UART=0)
-target_compile_definitions(mycropad PUBLIC PICO_DEFAULT_UART_TX_PIN=16)
-target_compile_definitions(mycropad PUBLIC PICO_DEFAULT_UART_RX_PIN=17)
+# target_compile_definitions(mycropad PUBLIC PICO_DEFAULT_UART_TX_PIN=16)
+# target_compile_definitions(mycropad PUBLIC PICO_DEFAULT_UART_RX_PIN=17)
 
 pico_enable_stdio_usb(mycropad 0)
 pico_enable_stdio_uart(mycropad 1)
