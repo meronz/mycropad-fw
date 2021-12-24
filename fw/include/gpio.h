@@ -21,7 +21,7 @@ private:
     uint32_t _key_events;
     RotaryEncoder* _encoder;
     static const int GpioNum = 11;
-    const uint8_t _gpios[GpioNum] = {
+    const uint8_t _keyGpios[GpioNum] = {
         GPIO_SW_1,
         GPIO_SW_2,
         GPIO_SW_3,
@@ -31,8 +31,6 @@ private:
         GPIO_SW_7,
         GPIO_SW_8,
         GPIO_ROT_SW,
-        GPIO_ROT_CLK,
-        GPIO_ROT_DATA,
     };
 
     const uint32_t _debounceTimes[GpioNum] = { 0 };

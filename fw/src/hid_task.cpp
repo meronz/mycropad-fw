@@ -18,13 +18,14 @@ void hid_task()
   // Poll every X ms
   const uint32_t interval_ms = 5;
   static uint32_t start_ms = 0;
+  static bool is_repeating = false;
+  static ulong lastEventMs = 0;
+  static Keymap::Keys oldEvent = Keymap::Keys::None;
 
   if (board_millis() - start_ms < interval_ms)
     return; // not enough time
   start_ms += interval_ms;
 
-  static ulong lastEventMs = 0;
-  static Keymap::Keys oldEvent = Keymap::Keys::None;
   Keymap::Keys keyEvent = Gpio::Instance()->GetKeyEvent();
 
   // Remote wakeup
@@ -40,18 +41,25 @@ void hid_task()
     return;
   }
 
+
   // Key repeat
   // Rotary encoder keys are not subject to repeat-rate
-  if(board_millis() - lastEventMs > 100
-  || keyEvent != Keymap::Keys::RotCCW
-  || keyEvent != Keymap::Keys::RotCW)
+  uint msSinceLastPress = board_millis() - lastEventMs;
+  if (msSinceLastPress > (is_repeating ? KEY_REPEAT_RATE_MS : KEY_REPEAT_RATE_MS) ||
+      keyEvent == Keymap::Keys::RotCCW ||
+      keyEvent == Keymap::Keys::RotCW)
   {
     oldEvent = Keymap::Keys::None;
+    is_repeating = true;
+  }
+  else
+  {
+    is_repeating = false;
   }
 
   // use to avoid send multiple consecutive zero report for keyboard
   static bool hasKey = false;
-  static keycode_t* kcArray = nullptr;
+  static keycode_t *kcArray = nullptr;
   static uint8_t kcLen = 0;
   static uint8_t kcIndex = 0;
 
@@ -65,7 +73,7 @@ void hid_task()
     hasKey = false;
     return;
   }
-  
+
   if (kcArray != nullptr && kcLen >= kcIndex)
   {
     printf("Next %d/%d\n", kcIndex, kcLen);
@@ -73,16 +81,16 @@ void hid_task()
     kmod = KEYMAP_MODIFIER(kcArray[kcIndex]);
     kcIndex++;
   }
-  else if(keyEvent != Keymap::Keys::None && keyEvent != oldEvent)
+  else if (keyEvent != Keymap::Keys::None && keyEvent != oldEvent)
   {
     oldEvent = keyEvent;
     lastEventMs = board_millis();
     printf("event: %d\n", (int)keyEvent);
     kcArray = Keymap::Instance()->GetKeys(keyEvent);
-    kcLen = kcArray[0]-1;
+    kcLen = kcArray[0] - 1;
     kcIndex = 1;
 
-    if(kcArray == nullptr)
+    if (kcArray == nullptr)
     {
       printf("keycodes ptr: %p\n", kcArray);
       kcIndex = 0;
@@ -103,7 +111,7 @@ void hid_task()
     tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, kmod, key_input);
     hasKey = true;
   }
-  else 
+  else
   {
     kcArray = nullptr;
     kcIndex = 0;

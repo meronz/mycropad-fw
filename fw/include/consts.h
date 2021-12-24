@@ -22,6 +22,9 @@ extern "C"
 #define LEDS_RGBW (false)
 #define LEDS_NUM  (8)
 
+#define KEY_REPEAT_DELAY_MS (500)
+#define KEY_REPEAT_RATE_MS (100)
+
 #ifdef __cplusplus
 }
 #endif

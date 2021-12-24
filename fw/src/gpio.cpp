@@ -22,14 +22,21 @@ void Gpio::Init()
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
 
-    for (uint i = 0; i < sizeof(_gpios); i++)
+    for (uint i = 0; i < sizeof(_keyGpios); i++)
     {
-        gpio_init(_gpios[i]);
-        gpio_set_dir(_gpios[i], GPIO_IN);
-        gpio_set_pulls(_gpios[i], true, false);
+        gpio_init(_keyGpios[i]);
+        gpio_set_dir(_keyGpios[i], GPIO_IN);
+        gpio_set_pulls(_keyGpios[i], true, false);
     }
 
+    gpio_init(GPIO_ROT_CLK);
+    gpio_set_dir(GPIO_ROT_CLK, GPIO_IN);
+    gpio_set_pulls(GPIO_ROT_CLK, true, false);
     gpio_set_irq_enabled_with_callback(GPIO_ROT_CLK, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true, &_gpio_callback);
+
+    gpio_init(GPIO_ROT_DATA);
+    gpio_set_dir(GPIO_ROT_DATA, GPIO_IN);
+    gpio_set_pulls(GPIO_ROT_DATA, true, false);
     gpio_set_irq_enabled_with_callback(GPIO_ROT_DATA, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true, &_gpio_callback);
 
     _encoder = new RotaryEncoder(GPIO_ROT_CLK, GPIO_ROT_DATA, RotaryEncoder::LatchMode::FOUR3);
@@ -73,8 +80,8 @@ void Gpio::Tick()
     // Button press events
     for (size_t i = 0; i < 9; i++)
     {
-        bool isSet = curState & (1 << _gpios[i]);
-        bool oldValue = oldState & (1 << _gpios[i]);
+        bool isSet = curState & (1 << _keyGpios[i]);
+        bool oldValue = oldState & (1 << _keyGpios[i]);
         if (isSet == oldValue)
         {
             // Set the timer which will allow a change from the current state.
@@ -89,7 +96,7 @@ void Gpio::Tick()
             if (debounceCounts[i] == 0)
             {
                 // Timer expired – accept the change.
-                _key_events |= isSet << GpioToKey(_gpios[i]);
+                _key_events |= isSet << GpioToKey(_keyGpios[i]);
 
                 // And reset the timer.
                 debounceCounts[i] = isSet
