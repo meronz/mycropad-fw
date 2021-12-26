@@ -10,6 +10,7 @@
 #include "keymap.h"
 #include "leds.h"
 #include "gpio.h"
+#include "usb_descriptors.h"
 
 #define ITF_KEYBOARD 0
 
@@ -69,7 +70,7 @@ void hid_task()
   // send empty key report if previously has key pressed
   if (hasKey)
   {
-    tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, 0, NULL);
+    tud_hid_n_keyboard_report(ITF_KEYBOARD, REPORT_ID_KEYBOARD, 0, NULL);
     hasKey = false;
     return;
   }
@@ -108,7 +109,7 @@ void hid_task()
   {
     printf("KC %x, mod %x\n", kc, kmod);
     uint8_t key_input[6] = {kc, 0, 0, 0, 0, 0};
-    tud_hid_n_keyboard_report(ITF_KEYBOARD, 0, kmod, key_input);
+    tud_hid_n_keyboard_report(ITF_KEYBOARD, REPORT_ID_KEYBOARD, kmod, key_input);
     hasKey = true;
   }
   else
