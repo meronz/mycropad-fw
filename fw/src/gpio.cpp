@@ -74,7 +74,7 @@ Keymap::Keys Gpio::GpioToKey(uint gpioNum)
 void Gpio::Tick()
 {
     static uint8_t debounceCounts[9] = {0};
-    uint32_t oldState = _key_events;
+    static uint32_t oldState = 0;
     uint32_t curState = ~gpio_get_all();
 
     // Button press events

@@ -25,6 +25,28 @@ extern "C"
 #define KEY_REPEAT_DELAY_MS (500)
 #define KEY_REPEAT_RATE_MS (100)
 
+// HID media keys not defined in tusb
+#define HID_KEY_MEDIA_PLAYPAUSE           0XE8
+#define HID_KEY_MEDIA_STOPCD              0XE9
+#define HID_KEY_MEDIA_PREVIOUSSONG        0XEA
+#define HID_KEY_MEDIA_NEXTSONG            0XEB
+#define HID_KEY_MEDIA_EJECTCD             0XEC
+#define HID_KEY_MEDIA_VOLUMEUP            0XED
+#define HID_KEY_MEDIA_VOLUMEDOWN          0XEE
+#define HID_KEY_MEDIA_MUTE                0XEF
+#define HID_KEY_MEDIA_WWW                 0XF0
+#define HID_KEY_MEDIA_BACK                0XF1
+#define HID_KEY_MEDIA_FORWARD             0XF2
+#define HID_KEY_MEDIA_STOP                0XF3
+#define HID_KEY_MEDIA_FIND                0XF4
+#define HID_KEY_MEDIA_SCROLLUP            0XF5
+#define HID_KEY_MEDIA_SCROLLDOWN          0XF6
+#define HID_KEY_MEDIA_EDIT                0XF7
+#define HID_KEY_MEDIA_SLEEP               0XF8
+#define HID_KEY_MEDIA_COFFEE              0XF9
+#define HID_KEY_MEDIA_REFRESH             0XFA
+#define HID_KEY_MEDIA_CALC                0XFB
+
 #ifdef __cplusplus
 }
 #endif

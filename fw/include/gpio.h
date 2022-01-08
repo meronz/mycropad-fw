@@ -8,8 +8,8 @@
 #include "consts.h"
 #include "keymap.h"
 
-#define CHECK_MSEC    5         // Read hardware every 5 msec
-#define PRESS_MSEC    10        // Stable time before registering pressed
+#define CHECK_MSEC    5        // Read hardware every 5 msec
+#define PRESS_MSEC    25        // Stable time before registering pressed
 #define RELEASE_MSEC  100       // Stable time before registering released 
 
 class Gpio
