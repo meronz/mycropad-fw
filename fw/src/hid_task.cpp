@@ -72,14 +72,14 @@ void hid_task()
   }
 
   // send empty key report if previously has key pressed
-  if (hasKeyboardKey && keyEvent != oldEvent)
+  if (hasKeyboardKey)
   {
     tud_hid_n_keyboard_report(ITF_KEYBOARD, REPORT_ID_KEYBOARD, 0, NULL);
     hasKeyboardKey = false;
     oldEvent = Keymap::Keys::None;
     return;
   }
-  else if (hasConsumerKey && keyEvent != oldEvent)
+  else if (hasConsumerKey)
   {
     uint16_t key = 0;
     tud_hid_report(REPORT_ID_CONSUMER_CONTROL, &key, 2);
